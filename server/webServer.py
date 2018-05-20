@@ -28,21 +28,14 @@ print("Started program...")
 numberOfSwitches = 5
 obj = []
 
-# For each switch load the pickled data
-# If the pickled file does not exist, create a new one
 for i in range(0,numberOfSwitches):
 
-    # The path to test for the pickled data
     zonePath = Path("zone"+str(i))
-
-    # If it is a file, load its contents into memory
     if zonePath.is_file():
         print(str(zonePath) + " is a file")
         file = open(zonePath,"rb")
         obj.append(pickle.load(file))
         file.close()
-        
-    # If its not a file, create a blank switch and save the file
     else:
         print(str(zonePath) + " is a not a file")
         file = open(zonePath,"wb")
@@ -50,6 +43,5 @@ for i in range(0,numberOfSwitches):
         print(obj[i].name)
         pickle.dump(obj[i],file)
         file.close()
-
 
 print(json.dumps(obj,cls=CustomEncoder))

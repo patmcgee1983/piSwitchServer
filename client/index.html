@@ -1,0 +1,46 @@
+<html>
+<head>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+
+<link rel="stylesheet" href="bootstrap-3.3.7-dist/css/bootstrap.min.css">
+
+<script src="bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+
+<script>
+
+
+$(function() {
+
+jsonString = '[{"name": "Zone0", "id": 0, "startTime": "", "endTime": "", "state": 0}, {"name": "Zone1", "id": 1, "startTime": "", "endTime": "", "state": 0}, {"name": "Zone2", "id": 2, "startTime": "", "endTime": "", "state": 0}, {"name": "Zone3", "id": 3, "startTime": "", "endTime": "", "state": 0}, {"name": "Zone4", "id": 4, "startTime": "", "endTime": "", "state": 0}]'
+
+zones = JSON.parse(jsonString)
+
+console.log(zones)
+
+for (i=0; i<zones.length; i++)
+{	
+	name = zones[i].name
+	id = zones[i].id
+	startTime = zones[i].startTime
+	endTime = zones[i].endTime
+	state = zones[i].state
+	
+	str = "";
+	str += "<h2>"+name+"</h2>"
+	console.log(zones[i])
+	$("#content").append("<div id=\"zone"+id+"\">"+str+"</div>")
+}
+})
+</script>
+
+</head>
+
+<body>
+
+<h1 class="text-center">Pi Switch Server</h1>
+
+<div id="content" style="width: 80%; margin: auto;">
+
+</div>
