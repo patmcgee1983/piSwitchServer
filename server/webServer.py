@@ -18,7 +18,7 @@ class Zone:
 class CustomEncoder(json.JSONEncoder):
     def default(self,obj):
         if isinstance(obj, Zone):
-            return { "name" : obj.name, "id" : obj.id, "startTime" : obj.startTime, "endTime" : obj.endTime, "state" : obj.state }
+            return { "name" : obj.name, "id" : obj.id, "startTime" : obj.startTime, "endTime" : obj.endTime, "state" : obj.state, "days" : obj.days }
         
         return json.JSONEncoder.default(self,obj)
     

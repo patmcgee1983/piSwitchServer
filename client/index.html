@@ -10,10 +10,59 @@
 
 <script>
 
+function updateIP()
+{
+}
+
+function disableEdit(zone)
+{
+	$("#startTime_zone"+zone).attr("disabled","disabled")	
+
+	$("#endTime_zone"+zone).attr("disabled","disabled")
+	$("#chk_days_m_zone"+zone).attr("disabled","disabled")
+	$("#chk_days_t_zone"+zone).attr("disabled","disabled")
+	$("#chk_days_w_zone"+zone).attr("disabled","disabled")
+	$("#chk_days_th_zone"+zone).attr("disabled","disabled")
+	$("#chk_days_f_zone"+zone).attr("disabled","disabled")
+	$("#chk_days_s_zone"+zone).attr("disabled","disabled")
+	$("#chk_days_su_zone"+zone).attr("disabled","disabled")	
+	
+	$("#btn_save_zone"+zone).attr("disabled","disabled")	
+	$("#btn_cancel_zone"+zone).attr("disabled","disabled")	
+}
+
+
+
+function enableEdit(zone)
+{
+	console.log("enable edit " + zone)
+	$("#startTime_zone"+zone).removeAttr("disabled")
+
+	$("#endTime_zone"+zone).removeAttr("disabled")
+	$("#chk_days_m_zone"+zone).removeAttr("disabled")
+	$("#chk_days_t_zone"+zone).removeAttr("disabled")
+	$("#chk_days_w_zone"+zone).removeAttr("disabled")
+	$("#chk_days_th_zone"+zone).removeAttr("disabled")
+	$("#chk_days_f_zone"+zone).removeAttr("disabled")
+	$("#chk_days_s_zone"+zone).removeAttr("disabled")
+	$("#chk_days_su_zone"+zone).removeAttr("disabled")	
+	
+	$("#btn_save_zone"+zone).removeAttr("disabled")	
+	$("#btn_cancel_zone"+zone).removeAttr("disabled")
+}
+
+
+function update(i)
+{
+	zones[i].name = "Zone"+i
+	zones[i].startTime = $("#startTime_zone"+i).val()
+	zones[i].endTime = $("#endTime_zone"+i).val()
+	console.log(zones)
+}
 
 $(function() {
 
-jsonString = '[{"name": "Zone0", "id": 0, "startTime": "", "endTime": "", "state": 0}, {"name": "Zone1", "id": 1, "startTime": "", "endTime": "", "state": 0}, {"name": "Zone2", "id": 2, "startTime": "", "endTime": "", "state": 0}, {"name": "Zone3", "id": 3, "startTime": "", "endTime": "", "state": 0}, {"name": "Zone4", "id": 4, "startTime": "", "endTime": "", "state": 0}]'
+jsonString = '[{"name": "Zone0", "id": 0, "startTime": "", "endTime": "", "state": 0, "days": [0, 0, 0, 0, 0, 0, 0]}, {"name": "Zone1", "id": 1, "startTime": "", "endTime": "", "state": 0, "days": [0, 0, 0, 0, 0, 0, 0]}, {"name": "Zone2", "id": 2, "startTime": "", "endTime": "", "state": 0, "days": [0, 0, 0, 0, 0, 0, 0]}, {"name": "Zone3", "id": 3, "startTime": "", "endTime": "", "state": 0, "days": [0, 0, 0, 0, 0, 0, 0]}, {"name": "Zone4", "id": 4, "startTime": "", "endTime": "", "state": 0, "days": [0, 0, 0, 0, 0, 0, 0]}]'
 
 zones = JSON.parse(jsonString)
 
@@ -28,9 +77,56 @@ for (i=0; i<zones.length; i++)
 	state = zones[i].state
 	
 	str = "";
-	str += "<h2>"+name+"</h2>"
+	str += "<table style=\"width: 100%\">"
+	str += "<tr>"
+	str += "<td><h2 style=\"display: inline\">"+name+"</h2></td></tr>"
+	str += "<tr><td style=\"margin: 0\"><button type=\"button\" id=\"btn_on_zone"+id+"\" class=\"btn btn-secondary btn-lg\">On</button></td>"
+	str += "<td style=\"padding-left: 10px\"><button type=\"button\" class=\"btn btn-secondary btn-lg\" id=\"btn_off_zone"+id+"\">Off</button></td>"
+	str += "<td style=\"padding-left: 10px\"><button type=\"button\" class=\"btn btn-secondary btn-lg\" id=\"btn_off_zone"+id+"\">Force</button></td>"
+	str += "<td style=\"padding-left: 20px\">Start Time: <input type=\"time\" id=\"startTime_zone"+id+"\"></td>"
+	str += "<td>End Time: <input type=\"time\" id=\"endTime_zone"+id+"\"></td>"
+	str += "<td style=\"padding-left: 10px\"><table style=\"display: inline\" border=\"0\"><tr><td>M</td><td>T</td><td>W</td><td>Th</td><td>F</td><td>S</td><td>Su</td></tr>"
+	str += "<tr><td><input type=\"checkbox\" id=\"chk_days_m_zone"+id+"\"></td><td><input type=\"checkbox\" id=\"chk_days_t_zone"+id+"\"></td><td><input type=\"checkbox\" id=\"chk_days_w_zone"+id+"\"></td><td><input type=\"checkbox\" id=\"chk_days_th_zone"+id+"\"></td><td><input type=\"checkbox\" id=\"chk_days_f_zone"+id+"\"></td><td><input type=\"checkbox\" id=\"chk_days_s_zone"+id+"\"></td><td><input type=\"checkbox\" id=\"chk_days_su_zone"+id+"\"></td></tr></table>"
+	
+	str += "<td style=\"padding-left: 10px\"><button type=\"button\" class=\"btn btn-secondary\" id=\"btn_edit_zone"+id+"\">Edit</button></td>"
+	str += "<td style=\"padding-left: 10px\"><button type=\"button\" class=\"btn btn-secondary\" id=\"btn_save_zone"+id+"\">Save</button></td>"
+	str += "<td style=\"padding-left: 10px\"><button type=\"button\" class=\"btn btn-secondary\" id=\"btn_cancel_zone"+id+"\">Cancel</button></td>"
+	
+	str += "</tr></table></td>"
+	str += "<hr>"
 	console.log(zones[i])
 	$("#content").append("<div id=\"zone"+id+"\">"+str+"</div>")
+
+	if (state == 0)
+	{
+		$("#btn_off_zone"+id).attr('class', 'btn btn-danger btn-lg');
+		$("#btn_on_zone"+id).attr('class', 'btn btn-secondary btn-lg');
+	}
+	else
+	{
+		$("#btn_on_zone"+id).attr('class', 'btn btn-success btn-lg');
+		$("#btn_off_zone"+id).attr('class', 'btn btn-secondary btn-lg');
+	}
+	
+	
+	(function(id) {
+	$("#btn_cancel_zone"+id).on("click", function()
+		{
+		disableEdit(id)
+		})
+	$("#btn_edit_zone"+id).on("click", function()
+		{
+		enableEdit(id)
+		})
+	$("#btn_save_zone"+id).on("click", function()
+		{
+		update(id)
+		})
+
+	})(i);
+
+	disableEdit(id)
+		
 }
 })
 </script>
@@ -41,6 +137,9 @@ for (i=0; i<zones.length; i++)
 
 <h1 class="text-center">Pi Switch Server</h1>
 
+<h3 class="text-center">
+IP Address : <input type="text" class="input-lg"> <button type="button" class="btn btn-lg btn-success">Go</button>
+</h3>
 <div id="content" style="width: 80%; margin: auto;">
 
 </div>
