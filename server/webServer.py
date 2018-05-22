@@ -1,3 +1,10 @@
+#
+# PI Web Server
+# 2018 Pat McGee
+# This takes in http requests, and responds with a json string to the client the switch states
+# Works in conjuntion with the client file
+#
+
 import json
 from pathlib import Path
 import pickle
@@ -21,10 +28,24 @@ class CustomEncoder(json.JSONEncoder):
             return { "name" : obj.name, "id" : obj.id, "startTime" : obj.startTime, "endTime" : obj.endTime, "state" : obj.state, "days" : obj.days }
         
         return json.JSONEncoder.default(self,obj)
+
+
+# SaveZone takes in the id of the zone and saves the
+# Zone of that ID to file
+def SaveZone(i):
+    zonePath = Path("zone"+str(i))
+    file = open(zonePath,"wb")
+    obj.append(Zone(i))
+    print(obj[i].name)
+    pickle.dump(obj[i],file)
+    file.close()
+
+
     
 # Entry point for main program
 print("Started program...")
 
+    
 numberOfSwitches = 5
 obj = []
 
@@ -43,5 +64,8 @@ for i in range(0,numberOfSwitches):
         print(obj[i].name)
         pickle.dump(obj[i],file)
         file.close()
+
+#obj[2].name = "Some other name"
+#SaveZone(2);
 
 print(json.dumps(obj,cls=CustomEncoder))
