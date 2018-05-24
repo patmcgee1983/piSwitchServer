@@ -8,7 +8,13 @@
 import json
 from pathlib import Path
 import pickle
+from flask import Flask
+from flask import request
 
+app = Flask(__name__)
+
+
+    
 # a Zone is a virtual representation of a switch
 # It contains the current state, name, description, and schedule
 class Zone:
@@ -34,18 +40,16 @@ class CustomEncoder(json.JSONEncoder):
 # Zone of that ID to file
 def SaveZone(i):
     zonePath = Path("zone"+str(i))
-    file = open(zonePath,"wb")
+    file = open(str(zonePath),"wb")
     obj.append(Zone(i))
     print(obj[i].name)
     pickle.dump(obj[i],file)
     file.close()
 
 
-    
 # Entry point for main program
 print("Started program...")
 
-    
 numberOfSwitches = 5
 obj = []
 
@@ -54,12 +58,12 @@ for i in range(0,numberOfSwitches):
     zonePath = Path("zone"+str(i))
     if zonePath.is_file():
         print(str(zonePath) + " is a file")
-        file = open(zonePath,"rb")
+        file = open(str(zonePath),"rb")
         obj.append(pickle.load(file))
         file.close()
     else:
         print(str(zonePath) + " is a not a file")
-        file = open(zonePath,"wb")
+        file = open(str(zonePath),"wb")
         obj.append(Zone(i))
         print(obj[i].name)
         pickle.dump(obj[i],file)
@@ -68,4 +72,20 @@ for i in range(0,numberOfSwitches):
 #obj[2].name = "Some other name"
 #SaveZone(2);
 
-print(json.dumps(obj,cls=CustomEncoder))
+@app.route("/")
+
+def webServer():
+
+    #zoneList = obj
+    
+
+    switch  = request.args.get('switch', None)
+    position  = request.args.get('position', None)
+
+    return json.dumps(obj,cls=CustomEncoder)
+
+if __name__ == "__main__":
+
+    app.run(host='0.0.0.0')
+    
+
