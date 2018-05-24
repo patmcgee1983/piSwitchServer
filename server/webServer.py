@@ -1,6 +1,6 @@
 #
 # PI Web Server
-# 2018 Pat McGee
+# made 2018 by Pat McGee
 # This takes in http requests, and responds with a json string to the client the switch states
 # Works in conjuntion with the client file
 #
