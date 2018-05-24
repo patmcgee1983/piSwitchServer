@@ -60,10 +60,8 @@ function update(i)
 	console.log(zones)
 }
 
-$(function() {
-
-jsonString = '[{"name": "Zone0", "id": 0, "startTime": "", "endTime": "", "state": 0, "days": [0, 0, 0, 0, 0, 0, 0]}, {"name": "Zone1", "id": 1, "startTime": "", "endTime": "", "state": 0, "days": [0, 0, 0, 0, 0, 0, 0]}, {"name": "Zone2", "id": 2, "startTime": "", "endTime": "", "state": 0, "days": [0, 0, 0, 0, 0, 0, 0]}, {"name": "Zone3", "id": 3, "startTime": "", "endTime": "", "state": 0, "days": [0, 0, 0, 0, 0, 0, 0]}, {"name": "Zone4", "id": 4, "startTime": "", "endTime": "", "state": 0, "days": [0, 0, 0, 0, 0, 0, 0]}]'
-
+function loadData(jsonString)
+{
 zones = JSON.parse(jsonString)
 
 console.log(zones)
@@ -128,6 +126,41 @@ for (i=0; i<zones.length; i++)
 	disableEdit(id)
 		
 }
+}
+
+
+function getData()
+{
+
+piIp = $("#piIp").val()
+
+url = "http://" + piIp + ":5000"
+
+console.log("sending ajax request to " + url)
+
+$.get( url, { },
+  function( data ) {
+	console.log("ajax request received")
+    loadData(data)
+  })
+  .fail(function (data)
+  {
+	console.log("Failed on ajax request")
+	console.log(data)
+  })
+
+}
+
+$(function() {
+
+
+$("#btn_go").on("click",function()
+{
+	console.log("getting data")
+	getData();
+})
+// jsonString = '[{"name": "Zone0", "id": 0, "startTime": "", "endTime": "", "state": 0, "days": [0, 0, 0, 0, 0, 0, 0]}, {"name": "Zone1", "id": 1, "startTime": "", "endTime": "", "state": 0, "days": [0, 0, 0, 0, 0, 0, 0]}, {"name": "Zone2", "id": 2, "startTime": "", "endTime": "", "state": 0, "days": [0, 0, 0, 0, 0, 0, 0]}, {"name": "Zone3", "id": 3, "startTime": "", "endTime": "", "state": 0, "days": [0, 0, 0, 0, 0, 0, 0]}, {"name": "Zone4", "id": 4, "startTime": "", "endTime": "", "state": 0, "days": [0, 0, 0, 0, 0, 0, 0]}]'
+
 })
 </script>
 
@@ -138,7 +171,7 @@ for (i=0; i<zones.length; i++)
 <h1 class="text-center">Pi Switch Server</h1>
 
 <h3 class="text-center">
-IP Address : <input type="text" class="input-lg"> <button type="button" class="btn btn-lg btn-success">Go</button>
+IP Address : <input type="text" class="input-lg" id="piIp"> <button type="button" id="btn_go" class="btn btn-lg btn-success">Go</button>
 </h3>
 <div id="content" style="width: 80%; margin: auto;">
 
