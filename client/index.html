@@ -7,26 +7,91 @@
 <link rel="stylesheet" href="bootstrap-3.3.7-dist/css/bootstrap.min.css">
 
 <script src="bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
-
+<script src="https://code.jquery.com/ui/jquery-ui-git.js"></script>
 <script>
+
+
+var hideMessageTimer;
+var zones = []
+
+function showError(text)
+{
+		icon = "glyphicon glyphicon-remove";
+		bgcolor = "#f73838";
+
+		showMessage(text,icon,bgcolor)
+}
+
+function showSuccess(text)
+{
+		icon = "glyphicon glyphicon-ok";
+		bgcolor = "#008916";
+
+		showMessage(text,icon,bgcolor)
+}
+
+function showInfo(text)
+{
+		icon = "glyphicon glyphicon-info-sign";
+		bgcolor = "#000000";
+
+		showMessage(text,icon,bgcolor)
+}
+
+function ValidateIPaddress(ipaddress) {  
+  if (/^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(ipaddress)) {  
+    return (true)  
+  }  
+  return (false)  
+}  
+		
+function showMessage(text,icon,bgcolor)
+{
+	console.log("showing message...")
+	$("#messageBox").hide("slide", { direction: "down" }, 500, function()
+	{
+		clearTimeout(hideMessageTimer);
+
+		$("#messageBox_inner").css('background-color', bgcolor);
+		$("#messageBox_inner").html('<font size=\"+2\"><span class="'+icon+'"></span> '+text+'</font>')
+		$("#messageBox").show("slide", { direction: "down" }, 500);
+
+		$("#messageBox").on("click", function()
+		{
+			hideMessage();
+		});
+
+		hideMessageTimer = setTimeout(function()
+		{
+			hideMessage();
+		}, 5000);
+	});
+}
+
+function hideMessage()
+{
+	$("#messageBox").hide("slide", { direction: "down" }, 500);
+}
+		
+		
+var url
 
 function updateIP()
 {
 }
 
 function disableEdit(zone)
-{
+{	
+	var i=0
+	$('input[name="chk_days'+zone+'[]"]').each(function(){
+		$(this).attr("disabled","disabled")	
+		i++
+	});
+	
+	$("#txt_name_zone"+zone).attr("disabled","disabled")	
 	$("#startTime_zone"+zone).attr("disabled","disabled")	
-
 	$("#endTime_zone"+zone).attr("disabled","disabled")
 	$("#chk_days_m_zone"+zone).attr("disabled","disabled")
-	$("#chk_days_t_zone"+zone).attr("disabled","disabled")
-	$("#chk_days_w_zone"+zone).attr("disabled","disabled")
-	$("#chk_days_th_zone"+zone).attr("disabled","disabled")
-	$("#chk_days_f_zone"+zone).attr("disabled","disabled")
-	$("#chk_days_s_zone"+zone).attr("disabled","disabled")
-	$("#chk_days_su_zone"+zone).attr("disabled","disabled")	
-	
 	$("#btn_save_zone"+zone).attr("disabled","disabled")	
 	$("#btn_cancel_zone"+zone).attr("disabled","disabled")	
 }
@@ -36,17 +101,15 @@ function disableEdit(zone)
 function enableEdit(zone)
 {
 	console.log("enable edit " + zone)
-	$("#startTime_zone"+zone).removeAttr("disabled")
-
-	$("#endTime_zone"+zone).removeAttr("disabled")
-	$("#chk_days_m_zone"+zone).removeAttr("disabled")
-	$("#chk_days_t_zone"+zone).removeAttr("disabled")
-	$("#chk_days_w_zone"+zone).removeAttr("disabled")
-	$("#chk_days_th_zone"+zone).removeAttr("disabled")
-	$("#chk_days_f_zone"+zone).removeAttr("disabled")
-	$("#chk_days_s_zone"+zone).removeAttr("disabled")
-	$("#chk_days_su_zone"+zone).removeAttr("disabled")	
 	
+	$('input[name="chk_days'+zone+'[]"]').each(function(){
+		$(this).removeAttr("disabled")
+	});
+	
+	
+	$("#txt_name_zone"+zone).removeAttr("disabled")
+	$("#startTime_zone"+zone).removeAttr("disabled")
+	$("#endTime_zone"+zone).removeAttr("disabled")
 	$("#btn_save_zone"+zone).removeAttr("disabled")	
 	$("#btn_cancel_zone"+zone).removeAttr("disabled")
 }
@@ -54,10 +117,30 @@ function enableEdit(zone)
 
 function update(i)
 {
-	zones[i].name = "Zone"+i
+	console.log("Updating...")
+	zones[i].name = $("#txt_name_zone"+i).val()
 	zones[i].startTime = $("#startTime_zone"+i).val()
 	zones[i].endTime = $("#endTime_zone"+i).val()
-	console.log(zones)
+	console.log(zones[i])
+	
+	$.post(url, 
+		{
+			cmd: 'update',
+			name: zones[i].name,
+			startTime: zones[i].startTime,
+			endTime: zones[i].endTime
+			
+		},
+		function(data)
+		{
+		console.log("sent update")
+		showSuccess("Updated Zone "+i)
+		})
+	  .fail(function (data)
+	  {
+		showError("Failed on updating Zone")
+		console.log(data)
+	  })
 }
 
 function loadData(jsonString)
@@ -77,14 +160,14 @@ for (i=0; i<zones.length; i++)
 	str = "";
 	str += "<table style=\"width: 100%\">"
 	str += "<tr>"
-	str += "<td><h2 style=\"display: inline\">"+name+"</h2></td></tr>"
+	str += "<td colspan=\"5\"><input type=\"text\" id=\"txt_name_zone"+id+"\" style=\"font-size: 24px; background: #ffffff; border: 0\" value=\""+name+"\"></h2></td></tr>"
 	str += "<tr><td style=\"margin: 0\"><button type=\"button\" id=\"btn_on_zone"+id+"\" class=\"btn btn-secondary btn-lg\">On</button></td>"
 	str += "<td style=\"padding-left: 10px\"><button type=\"button\" class=\"btn btn-secondary btn-lg\" id=\"btn_off_zone"+id+"\">Off</button></td>"
 	str += "<td style=\"padding-left: 10px\"><button type=\"button\" class=\"btn btn-secondary btn-lg\" id=\"btn_off_zone"+id+"\">Force</button></td>"
 	str += "<td style=\"padding-left: 20px\">Start Time: <input type=\"time\" id=\"startTime_zone"+id+"\"></td>"
 	str += "<td>End Time: <input type=\"time\" id=\"endTime_zone"+id+"\"></td>"
 	str += "<td style=\"padding-left: 10px\"><table style=\"display: inline\" border=\"0\"><tr><td>M</td><td>T</td><td>W</td><td>Th</td><td>F</td><td>S</td><td>Su</td></tr>"
-	str += "<tr><td><input type=\"checkbox\" id=\"chk_days_m_zone"+id+"\"></td><td><input type=\"checkbox\" id=\"chk_days_t_zone"+id+"\"></td><td><input type=\"checkbox\" id=\"chk_days_w_zone"+id+"\"></td><td><input type=\"checkbox\" id=\"chk_days_th_zone"+id+"\"></td><td><input type=\"checkbox\" id=\"chk_days_f_zone"+id+"\"></td><td><input type=\"checkbox\" id=\"chk_days_s_zone"+id+"\"></td><td><input type=\"checkbox\" id=\"chk_days_su_zone"+id+"\"></td></tr></table>"
+	str += "<tr><td><input type=\"checkbox\" id=\"chk_days"+id+"\" name=\"chk_days"+id+"[]\"></td><td><input type=\"checkbox\" id=\"chk_days"+id+"\" name=\"chk_days"+id+"[]\"></td><td><input type=\"checkbox\" id=\"chk_days"+id+"\" name=\"chk_days"+id+"[]\"></td><td><input type=\"checkbox\" id=\"chk_days"+id+"\" name=\"chk_days"+id+"[]\"></td><td><input type=\"checkbox\" id=\"chk_days"+id+"\" name=\"chk_days"+id+"[]\"></td><td><input type=\"checkbox\" id=\"chk_days"+id+"\" name=\"chk_days"+id+"[]\"></td><td><input type=\"checkbox\" id=\"chk_days"+id+"\" name=\"chk_days"+id+"[]\"></td></tr></table>"
 	
 	str += "<td style=\"padding-left: 10px\"><button type=\"button\" class=\"btn btn-secondary\" id=\"btn_edit_zone"+id+"\">Edit</button></td>"
 	str += "<td style=\"padding-left: 10px\"><button type=\"button\" class=\"btn btn-secondary\" id=\"btn_save_zone"+id+"\">Save</button></td>"
@@ -95,6 +178,16 @@ for (i=0; i<zones.length; i++)
 	console.log(zones[i])
 	$("#content").append("<div id=\"zone"+id+"\">"+str+"</div>")
 
+	var j=0
+	$('input[name="chk_days'+i+'[]"]').each(function(){
+		if (zones[i].days[j] == 1)
+		{
+			$(this).prop('checked', true);
+		}
+		j++
+	});
+	
+	
 	if (state == 0)
 	{
 		$("#btn_off_zone"+id).attr('class', 'btn btn-danger btn-lg');
@@ -138,19 +231,33 @@ url = "http://" + piIp + ":5000"
 
 console.log("sending ajax request to " + url)
 
-$.get( url, { },
-  function( data ) {
-	console.log("ajax request received")
-    loadData(data)
-  })
-  .fail(function (data)
-  {
-	console.log("Failed on ajax request")
-	console.log(data)
-  })
-
+if (piIp == "test")
+{
+	loadData('[{"name": "Zone0", "id": 0, "startTime": "", "endTime": "", "state": 0, "days": [1, 0, 0, 0, 0, 0, 0]}, {"name": "Zone1", "id": 1, "startTime": "", "endTime": "", "state": 0, "days": [0, 1, 0, 0, 0, 0, 1]}, {"name": "Zone2", "id": 2, "startTime": "", "endTime": "", "state": 0, "days": [0, 0, 1, 0, 0, 0, 0]}, {"name": "Zone3", "id": 3, "startTime": "", "endTime": "", "state": 0, "days": [0, 0, 0, 0, 0, 0, 0]}, {"name": "Zone4", "id": 4, "startTime": "", "endTime": "", "state": 0, "days": [0, 0, 0, 0, 0, 0, 0]}]')
 }
 
+else
+{
+	if (ValidateIPaddress(piIp))
+	{
+		$.get( url, { },
+		  function( data ) {
+			console.log("ajax request received")
+			loadData(data)
+		  })
+		  .fail(function (data)
+		  {
+			showError("PI Switch not found on " + url)
+			console.log(data)
+		})
+
+	}
+	else
+	{
+		showError("Invalid IP Address!")
+	}
+}
+}
 $(function() {
 
 
@@ -160,7 +267,6 @@ $("#btn_go").on("click",function()
 	console.log("getting data")
 	getData();
 })
-// jsonString = '[{"name": "Zone0", "id": 0, "startTime": "", "endTime": "", "state": 0, "days": [0, 0, 0, 0, 0, 0, 0]}, {"name": "Zone1", "id": 1, "startTime": "", "endTime": "", "state": 0, "days": [0, 0, 0, 0, 0, 0, 0]}, {"name": "Zone2", "id": 2, "startTime": "", "endTime": "", "state": 0, "days": [0, 0, 0, 0, 0, 0, 0]}, {"name": "Zone3", "id": 3, "startTime": "", "endTime": "", "state": 0, "days": [0, 0, 0, 0, 0, 0, 0]}, {"name": "Zone4", "id": 4, "startTime": "", "endTime": "", "state": 0, "days": [0, 0, 0, 0, 0, 0, 0]}]'
 
 })
 </script>
@@ -177,3 +283,8 @@ IP Address : <input type="text" class="input-lg" id="piIp"> <button type="button
 <div id="content" style="width: 80%; margin: auto;">
 
 </div>
+
+	<!-- Div that shows messages back to user -->
+	<div id="messageBox" style="display: none; bottom: 10px; width: 100%; position: fixed; z-index: 990; text-align: center; padding: 20px; color: #ffffff; border: 0px solid black">
+		<span id="messageBox_inner" style="padding: 16px; border: 1px solid black"></span>
+	</div>
