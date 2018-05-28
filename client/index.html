@@ -114,6 +114,70 @@ function enableEdit(zone)
 	$("#btn_cancel_zone"+zone).removeAttr("disabled")
 }
 
+function enableForce(zone)
+{
+	zones[zone].force = 1;
+	$("#btn_force_zone"+zone).attr('class', 'btn btn-warning btn-lg');
+	disableScheduler(zone)
+}
+
+function disableForce(zone)
+{
+	zones[zone].force = 0;
+	$("#btn_force_zone"+zone).attr('class', 'btn btn-secondary btn-lg');
+}
+
+function clickOn(zone)
+{
+	if (zones[zone].force == 1)
+	{
+		on(zone)
+	}
+}
+function clickOff(zone)
+{
+	if (zones[zone].force == 1)
+	{
+		off(zone)
+	}
+}
+
+function on(zone)
+{
+	zones[zone].state = 1
+	$("#btn_on_zone"+zone).attr('class', 'btn btn-success btn-lg');
+	$("#btn_off_zone"+zone).attr('class', 'btn btn-secondary btn-lg');
+	
+}
+
+function off(zone)
+{
+	zones[zone].state = 0
+	$("#btn_off_zone"+zone).attr('class', 'btn btn-danger btn-lg');
+	$("#btn_on_zone"+zone).attr('class', 'btn btn-secondary btn-lg');
+}
+
+function enableScheduler(zone)
+{
+	console.log(zones[zone].startTime)
+	console.log(zones[zone].endTime)
+	if (zones[zone].starTime != "" && zones[zone].endTime != "")
+	{
+		zones[zone].scheduler = 1;
+		$("#btn_scheduler_zone"+zone).attr('class', 'btn btn-success btn-lg');
+		disableForce(zone)
+	}
+	else
+	{
+		showError("Invalid time range!")
+	}
+}
+
+function disableScheduler(zone)
+{
+	zones[zone].scheduler = 0;
+	$("#btn_scheduler_zone"+zone).attr('class', 'btn btn-secondary btn-lg');
+}
 
 function update(i)
 {
@@ -121,6 +185,21 @@ function update(i)
 	zones[i].name = $("#txt_name_zone"+i).val()
 	zones[i].startTime = $("#startTime_zone"+i).val()
 	zones[i].endTime = $("#endTime_zone"+i).val()
+	j=0;
+	$('input[name="chk_days'+i+'[]"]').each(function(){
+		//$(this).removeAttr("disabled")
+		console.log("Checking")
+		if ($(this).prop('checked') == true)
+		{
+			zones[i].days[j] = 1;
+		}
+		else
+		{
+			zones[i].days[j] = 0;
+		}
+		j++
+		
+	});
 	console.log(zones[i])
 	
 	$.post(url, 
@@ -141,10 +220,13 @@ function update(i)
 		showError("Failed on updating Zone")
 		console.log(data)
 	  })
+	  
+	  disableEdit(i)
 }
 
 function loadData(jsonString)
 {
+
 zones = JSON.parse(jsonString)
 
 console.log(zones)
@@ -163,7 +245,8 @@ for (i=0; i<zones.length; i++)
 	str += "<td colspan=\"5\"><input type=\"text\" id=\"txt_name_zone"+id+"\" style=\"font-size: 24px; background: #ffffff; border: 0\" value=\""+name+"\"></h2></td></tr>"
 	str += "<tr><td style=\"margin: 0\"><button type=\"button\" id=\"btn_on_zone"+id+"\" class=\"btn btn-secondary btn-lg\">On</button></td>"
 	str += "<td style=\"padding-left: 10px\"><button type=\"button\" class=\"btn btn-secondary btn-lg\" id=\"btn_off_zone"+id+"\">Off</button></td>"
-	str += "<td style=\"padding-left: 10px\"><button type=\"button\" class=\"btn btn-secondary btn-lg\" id=\"btn_off_zone"+id+"\">Force</button></td>"
+	str += "<td style=\"padding-left: 10px\"><button type=\"button\" class=\"btn btn-secondary btn-lg\" id=\"btn_force_zone"+id+"\">Force</button></td>"
+	str += "<td style=\"padding-left: 10px\"><button type=\"button\" class=\"btn btn-secondary btn-lg\" id=\"btn_scheduler_zone"+id+"\">Scheduler</button></td>"
 	str += "<td style=\"padding-left: 20px\">Start Time: <input type=\"time\" id=\"startTime_zone"+id+"\"></td>"
 	str += "<td>End Time: <input type=\"time\" id=\"endTime_zone"+id+"\"></td>"
 	str += "<td style=\"padding-left: 10px\"><table style=\"display: inline\" border=\"0\"><tr><td>M</td><td>T</td><td>W</td><td>Th</td><td>F</td><td>S</td><td>Su</td></tr>"
@@ -188,15 +271,13 @@ for (i=0; i<zones.length; i++)
 	});
 	
 	
-	if (state == 0)
+	if (state == 1)
 	{
-		$("#btn_off_zone"+id).attr('class', 'btn btn-danger btn-lg');
-		$("#btn_on_zone"+id).attr('class', 'btn btn-secondary btn-lg');
+		on(id)
 	}
 	else
 	{
-		$("#btn_on_zone"+id).attr('class', 'btn btn-success btn-lg');
-		$("#btn_off_zone"+id).attr('class', 'btn btn-secondary btn-lg');
+		off(id)
 	}
 	
 	
@@ -212,6 +293,36 @@ for (i=0; i<zones.length; i++)
 	$("#btn_save_zone"+id).on("click", function()
 		{
 		update(id)
+		})
+	$("#btn_force_zone"+id).on("click", function()
+		{
+		if (zones[id].force == 0)
+		{
+			enableForce(id)
+		}
+		else
+		{
+			disableForce(id)
+		}
+		})
+	$("#btn_on_zone"+id).on("click", function()
+		{
+			clickOn(id)
+		})
+	$("#btn_off_zone"+id).on("click", function()
+		{
+			clickOff(id)
+		})
+		$("#btn_scheduler_zone"+id).on("click", function()
+		{
+			if (zones[id].scheduler == 0)
+			{
+				enableScheduler(id)
+			}
+			else
+			{
+				disableScheduler(id)
+			}
 		})
 
 	})(i);
@@ -233,6 +344,7 @@ console.log("sending ajax request to " + url)
 
 if (piIp == "test")
 {
+	showSuccess("Using test interface")
 	loadData('[{"name": "Zone0", "id": 0, "startTime": "", "endTime": "", "state": 0, "days": [1, 0, 0, 0, 0, 0, 0]}, {"name": "Zone1", "id": 1, "startTime": "", "endTime": "", "state": 0, "days": [0, 1, 0, 0, 0, 0, 1]}, {"name": "Zone2", "id": 2, "startTime": "", "endTime": "", "state": 0, "days": [0, 0, 1, 0, 0, 0, 0]}, {"name": "Zone3", "id": 3, "startTime": "", "endTime": "", "state": 0, "days": [0, 0, 0, 0, 0, 0, 0]}, {"name": "Zone4", "id": 4, "startTime": "", "endTime": "", "state": 0, "days": [0, 0, 0, 0, 0, 0, 0]}]')
 }
 
@@ -243,6 +355,7 @@ else
 		$.get( url, { },
 		  function( data ) {
 			console.log("ajax request received")
+			showSuccess("Connected to PI " + url)
 			loadData(data)
 		  })
 		  .fail(function (data)
