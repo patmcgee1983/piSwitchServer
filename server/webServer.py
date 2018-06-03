@@ -2,7 +2,7 @@
 # PI Web Server
 # made 2018 by Pat McGee
 # This takes in http requests, and responds with a json string to the client the switch states
-# Works in conjuntion with the client file
+# Works in conjunction with the client file
 #
 
 import json
@@ -66,6 +66,8 @@ app = Flask(__name__)
 class Zone:
     def __init__(self,id):
         self.id = id
+		self.scheduler = 0
+		self.force = 0
         self.name = "Zone"+str(id)
         self.state = 0
         self.startTime = ""
@@ -118,20 +120,38 @@ for i in range(0,numberOfSwitches):
 #obj[2].name = "Some other name"
 #SaveZone(2);
 
-@app.route("/")
+@app.route("/", methods=['GET', 'POST'])
 @crossdomain(origin='*')
 
 def webServer():
 
     #zoneList = obj
     
-
-    switch  = request.args.get('switch', None)
-    position  = request.args.get('position', None)
-
-    #resp = flask.Response(json.dumps(obj,cls=CustomEncoder))
-    #resp.headers['Access-Control-Allow-Origin'] = '*'
-    return json.dumps(obj,cls=CustomEncoder)
+	cmd = request.args.get('cmd',None)
+	
+	
+	if cmd == 'update':
+		zone = request.args.get('i',None)
+		name = request.args.get('name',None)
+		startTime = request.args.get('startTime',None)
+		endTime = request.args.get('endTime',None)
+		
+		if zone == "" or name == "" or startTime = "" or endTime = "":
+			return "{ \"status\" : \"fail\", \"msg\" : \"Not all information received to update\""
+		
+		else:
+			Zone[zone].name = name
+			Zone[zone].startTime = startTime
+			Zone[zone].endTime = endTime
+			
+			SaveZone(zone)
+			
+			return "{ \"status\" : \"success\", \"msg\" : \"Updated Zone\""
+		
+	else:
+		#resp = flask.Response(json.dumps(obj,cls=CustomEncoder))
+		#resp.headers['Access-Control-Allow-Origin'] = '*'
+		return json.dumps(obj,cls=CustomEncoder)
 
 if __name__ == "__main__":
 

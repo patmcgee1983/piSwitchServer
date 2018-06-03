@@ -205,6 +205,7 @@ function update(i)
 	$.post(url, 
 		{
 			cmd: 'update',
+			zone: i,
 			name: zones[i].name,
 			startTime: zones[i].startTime,
 			endTime: zones[i].endTime
@@ -213,8 +214,18 @@ function update(i)
 		function(data)
 		{
 		console.log("sent update")
-		showSuccess("Updated Zone "+i)
-		})
+		
+		if (data.status == "success")
+		{
+			showSuccess(data.msg)
+		}
+		else
+		{
+			showError("Error: " + data.msg)
+		}
+		
+		},
+		"json")
 	  .fail(function (data)
 	  {
 		showError("Failed on updating Zone")
@@ -247,8 +258,8 @@ for (i=0; i<zones.length; i++)
 	str += "<td style=\"padding-left: 10px\"><button type=\"button\" class=\"btn btn-secondary btn-lg\" id=\"btn_off_zone"+id+"\">Off</button></td>"
 	str += "<td style=\"padding-left: 10px\"><button type=\"button\" class=\"btn btn-secondary btn-lg\" id=\"btn_force_zone"+id+"\">Force</button></td>"
 	str += "<td style=\"padding-left: 10px\"><button type=\"button\" class=\"btn btn-secondary btn-lg\" id=\"btn_scheduler_zone"+id+"\">Scheduler</button></td>"
-	str += "<td style=\"padding-left: 20px\">Start Time: <input type=\"time\" id=\"startTime_zone"+id+"\"></td>"
-	str += "<td>End Time: <input type=\"time\" id=\"endTime_zone"+id+"\"></td>"
+	str += "<td style=\"padding-left: 20px\">Start Time: <input type=\"time\" id=\"startTime_zone"+id+"\" value=\""+startTime+"\"></td>"
+	str += "<td>End Time: <input type=\"time\" id=\"endTime_zone"+id+"\" value=\""+endTime+"\"></td>"
 	str += "<td style=\"padding-left: 10px\"><table style=\"display: inline\" border=\"0\"><tr><td>M</td><td>T</td><td>W</td><td>Th</td><td>F</td><td>S</td><td>Su</td></tr>"
 	str += "<tr><td><input type=\"checkbox\" id=\"chk_days"+id+"\" name=\"chk_days"+id+"[]\"></td><td><input type=\"checkbox\" id=\"chk_days"+id+"\" name=\"chk_days"+id+"[]\"></td><td><input type=\"checkbox\" id=\"chk_days"+id+"\" name=\"chk_days"+id+"[]\"></td><td><input type=\"checkbox\" id=\"chk_days"+id+"\" name=\"chk_days"+id+"[]\"></td><td><input type=\"checkbox\" id=\"chk_days"+id+"\" name=\"chk_days"+id+"[]\"></td><td><input type=\"checkbox\" id=\"chk_days"+id+"\" name=\"chk_days"+id+"[]\"></td><td><input type=\"checkbox\" id=\"chk_days"+id+"\" name=\"chk_days"+id+"[]\"></td></tr></table>"
 	
@@ -345,7 +356,7 @@ console.log("sending ajax request to " + url)
 if (piIp == "test")
 {
 	showSuccess("Using test interface")
-	loadData('[{"name": "Zone0", "id": 0, "startTime": "", "endTime": "", "state": 0, "days": [1, 0, 0, 0, 0, 0, 0]}, {"name": "Zone1", "id": 1, "startTime": "", "endTime": "", "state": 0, "days": [0, 1, 0, 0, 0, 0, 1]}, {"name": "Zone2", "id": 2, "startTime": "", "endTime": "", "state": 0, "days": [0, 0, 1, 0, 0, 0, 0]}, {"name": "Zone3", "id": 3, "startTime": "", "endTime": "", "state": 0, "days": [0, 0, 0, 0, 0, 0, 0]}, {"name": "Zone4", "id": 4, "startTime": "", "endTime": "", "state": 0, "days": [0, 0, 0, 0, 0, 0, 0]}]')
+	loadData('[{"name": "Zone0", "id": 0, "startTime": "00:00", "endTime": "01:00", "state": 0, "days": [1, 0, 0, 0, 0, 0, 0]}, {"name": "Zone1", "id": 1, "startTime": "01:00", "endTime": "02:00", "state": 0, "days": [0, 1, 0, 0, 0, 0, 1]}, {"name": "Zone2", "id": 2, "startTime": "03:00", "endTime": "04:00", "state": 0, "days": [0, 0, 1, 0, 0, 0, 0]}, {"name": "Zone3", "id": 3, "startTime": "04:30", "endTime": "04:59", "state": 0, "days": [1, 1, 1, 1, 1, 1, 1]}, {"name": "Zone4", "id": 4, "startTime": "05:00", "endTime": "05:59", "state": 0, "days": [0, 0, 0, 0, 0, 1, 1]}]')
 }
 
 else
