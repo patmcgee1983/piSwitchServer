@@ -161,7 +161,7 @@ function enableScheduler(zone)
 {
 	console.log(zones[zone].startTime)
 	console.log(zones[zone].endTime)
-	if (zones[zone].starTime != "" && zones[zone].endTime != "")
+	if (zones[zone].startTime != "" && zones[zone].endTime != "")
 	{
 		zones[zone].scheduler = 1;
 		$("#btn_scheduler_zone"+zone).attr('class', 'btn btn-success btn-lg');

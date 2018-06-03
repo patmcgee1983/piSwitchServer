@@ -66,8 +66,8 @@ app = Flask(__name__)
 class Zone:
     def __init__(self,id):
         self.id = id
-		self.scheduler = 0
-		self.force = 0
+        self.scheduler = "0"
+        self.force = "0"
         self.name = "Zone"+str(id)
         self.state = 0
         self.startTime = ""
@@ -136,7 +136,7 @@ def webServer():
 		startTime = request.args.get('startTime',None)
 		endTime = request.args.get('endTime',None)
 		
-		if zone == "" or name == "" or startTime = "" or endTime = "":
+		if zone == "" or name == "" or startTime == "" or endTime == "":
 			return "{ \"status\" : \"fail\", \"msg\" : \"Not all information received to update\""
 		
 		else:
