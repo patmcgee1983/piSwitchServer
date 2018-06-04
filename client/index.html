@@ -238,7 +238,9 @@ function update(i)
 function loadData(jsonString)
 {
 
-zones = JSON.parse(jsonString)
+piObject = JSON.parse(jsonString)
+
+zones = piObject.Zones
 
 console.log(zones)
 
@@ -356,7 +358,7 @@ console.log("sending ajax request to " + url)
 if (piIp == "test")
 {
 	showSuccess("Using test interface")
-	loadData('[{"name": "Zone0", "id": 0, "startTime": "00:00", "endTime": "01:00", "state": 0, "days": [1, 0, 0, 0, 0, 0, 0]}, {"name": "Zone1", "id": 1, "startTime": "01:00", "endTime": "02:00", "state": 0, "days": [0, 1, 0, 0, 0, 0, 1]}, {"name": "Zone2", "id": 2, "startTime": "03:00", "endTime": "04:00", "state": 0, "days": [0, 0, 1, 0, 0, 0, 0]}, {"name": "Zone3", "id": 3, "startTime": "04:30", "endTime": "04:59", "state": 0, "days": [1, 1, 1, 1, 1, 1, 1]}, {"name": "Zone4", "id": 4, "startTime": "05:00", "endTime": "05:59", "state": 0, "days": [0, 0, 0, 0, 0, 1, 1]}]')
+	loadData('{ "deviceName" : "My System", "deviceDesc" : "no real device", "deviceIp" : "192.168.1.0", "deviceTime" : "unknown", "Zones" : [{"name": "Zone0", "id": 0, "startTime": "00:00", "endTime": "01:00", "state": 0, "days": [1, 0, 0, 0, 0, 0, 0]}, {"name": "Zone1", "id": 1, "startTime": "01:00", "endTime": "02:00", "state": 0, "days": [0, 1, 0, 0, 0, 0, 1]}, {"name": "Zone2", "id": 2, "startTime": "03:00", "endTime": "04:00", "state": 0, "days": [0, 0, 1, 0, 0, 0, 0]}, {"name": "Zone3", "id": 3, "startTime": "04:30", "endTime": "04:59", "state": 0, "days": [1, 1, 1, 1, 1, 1, 1]}, {"name": "Zone4", "id": 4, "startTime": "05:00", "endTime": "05:59", "state": 0, "days": [0, 0, 0, 0, 0, 1, 1]}]}')
 }
 
 else

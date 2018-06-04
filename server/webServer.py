@@ -14,6 +14,11 @@ from flask import request
 from datetime import timedelta
 from flask import make_response, request, current_app
 from functools import update_wrapper
+from multiprocessing import Process, Value
+
+deviceName = ""
+deviceIp = ""
+deviceTime = ""
 
 
 def crossdomain(origin=None, methods=None, headers=None,
@@ -123,6 +128,11 @@ for i in range(0,numberOfSwitches):
 @app.route("/", methods=['GET', 'POST'])
 @crossdomain(origin='*')
 
+def timeTicker():
+    console.log("tick...")
+
+    # We'll check if the scheduler meets up with the 
+    
 def webServer():
 
     #zoneList = obj
@@ -151,10 +161,14 @@ def webServer():
 	else:
 		#resp = flask.Response(json.dumps(obj,cls=CustomEncoder))
 		#resp.headers['Access-Control-Allow-Origin'] = '*'
-		return json.dumps(obj,cls=CustomEncoder)
+                # Creating a JSON string from the device properties and the Zone array properties
+                jsonStr = "{ \"deviceName\" : \""+deviceName+"\", \"deviceDesc\" : \""+deviceDesc+"\", \"deviceIp\" : \""+deviceIp+"\", \"deviceTime\" : \""+deviceTime+"\", \"Zones\" : \""
+                jsonStr += json.dumps(obj,cls=CustomEncoder)
+                jsonStr += "}"
+		return jsonStr
 
 if __name__ == "__main__":
 
-    app.run(host='0.0.0.0')
+    app.run(host='0.0.0.0',debug=True, use_reloader=False)
     
 
