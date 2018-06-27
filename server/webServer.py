@@ -10,11 +10,12 @@ from pathlib import Path
 import pickle
 from flask import Flask
 from flask import request
-#from flask_cors import CORS
+#from flask_cors import nCORS
 from datetime import timedelta
 from flask import make_response, request, current_app
 from functools import update_wrapper
 from multiprocessing import Process, Value
+from celery import task
 
 deviceName = ""
 deviceIp = ""
@@ -128,47 +129,56 @@ for i in range(0,numberOfSwitches):
 @app.route("/", methods=['GET', 'POST'])
 @crossdomain(origin='*')
 
-def timeTicker():
-    console.log("tick...")
 
-    # We'll check if the scheduler meets up with the 
-    
 def webServer():
 
     #zoneList = obj
     
-	cmd = request.args.get('cmd',None)
-	
-	
-	if cmd == 'update':
-		zone = request.args.get('i',None)
-		name = request.args.get('name',None)
-		startTime = request.args.get('startTime',None)
-		endTime = request.args.get('endTime',None)
-		
-		if zone == "" or name == "" or startTime == "" or endTime == "":
-			return "{ \"status\" : \"fail\", \"msg\" : \"Not all information received to update\""
-		
-		else:
-			Zone[zone].name = name
-			Zone[zone].startTime = startTime
-			Zone[zone].endTime = endTime
-			
-			SaveZone(zone)
-			
-			return "{ \"status\" : \"success\", \"msg\" : \"Updated Zone\""
-		
-	else:
-		#resp = flask.Response(json.dumps(obj,cls=CustomEncoder))
-		#resp.headers['Access-Control-Allow-Origin'] = '*'
-                # Creating a JSON string from the device properties and the Zone array properties
-                jsonStr = "{ \"deviceName\" : \""+deviceName+"\", \"deviceDesc\" : \""+deviceDesc+"\", \"deviceIp\" : \""+deviceIp+"\", \"deviceTime\" : \""+deviceTime+"\", \"Zones\" : \""
-                jsonStr += json.dumps(obj,cls=CustomEncoder)
-                jsonStr += "}"
-		return jsonStr
+    cmd = request.form.get('cmd')
+    
+    print("Received Request...")
+    print(str(request.form))
+    
+    if cmd == 'update':
+        print("Updating...")
+        zone = request.form.get('zone')
+        name = request.form.get('name')
+        startTime = request.form.get('startTime')
+        endTime = request.form.get('endTime')
+        
+        if zone == "" or name == "":
+            return "{ \"status\" : \"fail\", \"msg\" : \"Not all information received to update\"}"
+        
+        else:
+            zone = int(zone)
+            obj[zone].name = name
+            obj[zone].startTime = startTime
+            obj[zone].endTime = endTime
+            
+            SaveZone(zone)
+            
+            return "{ \"status\" : \"success\", \"msg\" : \"Updated Zone\"}"
+        
+    else:
+        print("Returning PI Info")
+        deviceDesc = "My PI"
+        deviceIp = "192.168.1.100"
+        #resp = flask.Response(json.dumps(obj,cls=CustomEncoder))
+        #resp.headers['Access-Control-Allow-Origin'] = '*'
+        # Creating a JSON string from the device properties and the Zone array properties
+        jsonStr = "{ \"deviceName\" : \""+deviceName+"\", \"deviceDesc\" : \""+deviceDesc+"\", \"deviceIp\" : \""+deviceIp+"\", \"deviceTime\" : \""+deviceTime+"\", \"Zones\" : "
+        jsonStr += json.dumps(obj,cls=CustomEncoder)
+        jsonStr += "}"
+        return jsonStr
+
+@task
+while True:
+    print("loop running")
+    time.sleep(1)
+
 
 if __name__ == "__main__":
-
-    app.run(host='0.0.0.0',debug=True, use_reloader=False)
+    app.run(debug=True, use_reloader=False)
+  
     
 
