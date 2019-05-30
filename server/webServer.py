@@ -171,14 +171,14 @@ def webServer():
         jsonStr += "}"
         return jsonStr
 
-@task
-while True:
-    print("loop running")
-    time.sleep(1)
+#@task
+#while True:
+#    print("loop running")
+#    time.sleep(1)
 
 
 if __name__ == "__main__":
-    app.run(debug=True, use_reloader=False)
+    app.run(host='0.0.0.0',debug=True, use_reloader=False)
   
     
 
