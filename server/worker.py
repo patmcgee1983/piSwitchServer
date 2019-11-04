@@ -1,5 +1,5 @@
 import mysql.connector
-from datetime import date
+import datetime
 import time
 
 piDb = mysql.connector.connect(
@@ -15,8 +15,8 @@ print(piDb)
 
 while True:
 
-    time = datetime.time()
-    print(time)
+    currentTime = datetime.datetime.now()
+    print(currentTime)
     mycursor.execute("SELECT * FROM Zone")
     for x in mycursor:
         print(x[1])

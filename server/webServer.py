@@ -12,14 +12,23 @@ from flask import Flask
 from flask import request
 #from flask_cors import nCORS
 from datetime import timedelta
-from flask import make_response, request, current_app
+#from flask import make_response, request, current_app
 from functools import update_wrapper
-from multiprocessing import Process, Value
-from celery import task
+#from multiprocessing import Process, Value
+#from celery import task
+import mysql.connector
+import datetime
+import time
 
-deviceName = ""
-deviceIp = ""
-deviceTime = ""
+piDb = mysql.connector.connect(
+    host="localhost",
+    user="root",
+    passwd="toor"
+    )
+
+
+mycursor = piDb.cursor()
+mycursor.execute("USE piDb")
 
 
 def crossdomain(origin=None, methods=None, headers=None,
@@ -78,6 +87,7 @@ class Zone:
         self.state = 0
         self.startTime = ""
         self.endTime = ""
+        self.gpio = 0
         self.days = [0,0,0,0,0,0,0]
 
         print("Created " + self.name)
@@ -92,36 +102,26 @@ class CustomEncoder(json.JSONEncoder):
 
 # SaveZone takes in the id of the zone and saves the
 # Zone of that ID to file
-def SaveZone(i):
-    zonePath = Path("zone"+str(i))
-    file = open(str(zonePath),"wb")
-    obj.append(Zone(i))
-    print(obj[i].name)
-    pickle.dump(obj[i],file)
-    file.close()
+def NewZone():
+    print("New Zone")
+    sql = "insert into Zone(0,0,0,0,0)
+    mycursor.execute(sql)
+
+    RefreshZones()
+    
+
+def UpdateZone(i):
+    print("Update Zone")
+    sql = "UPDATE Zone Name='"++"', Gpio='"+0+"' WHERE Id="+i
+    
+
+def GetZones:
 
 
 # Entry point for main program
 print("Started program...")
 
-numberOfSwitches = 5
-obj = []
 
-for i in range(0,numberOfSwitches):
-
-    zonePath = Path("zone"+str(i))
-    if zonePath.is_file():
-        print(str(zonePath) + " is a file")
-        file = open(str(zonePath),"rb")
-        obj.append(pickle.load(file))
-        file.close()
-    else:
-        print(str(zonePath) + " is a not a file")
-        file = open(str(zonePath),"wb")
-        obj.append(Zone(i))
-        print(obj[i].name)
-        pickle.dump(obj[i],file)
-        file.close()
 
 #obj[2].name = "Some other name"
 #SaveZone(2);
@@ -155,7 +155,7 @@ def webServer():
             obj[zone].startTime = startTime
             obj[zone].endTime = endTime
             
-            SaveZone(zone)
+            UpdateZone(zone)
             
             return "{ \"status\" : \"success\", \"msg\" : \"Updated Zone\"}"
         
