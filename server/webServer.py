@@ -10,9 +10,9 @@ from pathlib import Path
 import pickle
 from flask import Flask
 from flask import request
-#from flask_cors import nCORS
+from flask_cors import CORS
 from datetime import timedelta
-#from flask import make_response, request, current_app
+from flask import make_response, request, current_app
 from functools import update_wrapper
 #from multiprocessing import Process, Value
 #from celery import task
@@ -72,6 +72,7 @@ def crossdomain(origin=None, methods=None, headers=None,
         return update_wrapper(wrapped_function, f)
     return decorator
 
+zones = []
 app = Flask(__name__)
 
 
@@ -79,23 +80,28 @@ app = Flask(__name__)
 # a Zone is a virtual representation of a switch
 # It contains the current state, name, description, and schedule
 class Zone:
-    def __init__(self,id):
-        self.id = id
-        self.scheduler = "0"
-        self.force = "0"
-        self.name = "Zone"+str(id)
-        self.state = 0
-        self.startTime = ""
-        self.endTime = ""
-        self.gpio = 0
-        self.days = [0,0,0,0,0,0,0]
+    def __init__(self,obj):
+        print("Creating Zone Object")
+        
+        self.id = obj[0]
+        self.name = obj[1]
+        self.state = obj[2]
+        self.force = obj[3]
+        self.startTime = str(obj[4])
+        self.endTime = str(obj[5])
+        self.gpio = obj[6] 
+        self.days = obj[7]
+        
+        print("Created " + self.name + ", State = " + str(self.state))
+        print(type(obj[7]))
 
-        print("Created " + self.name)
+              
+              
 
 class CustomEncoder(json.JSONEncoder):
     def default(self,obj):
         if isinstance(obj, Zone):
-            return { "name" : obj.name, "id" : obj.id, "startTime" : obj.startTime, "endTime" : obj.endTime, "state" : obj.state, "days" : obj.days }
+            return { "name" : obj.name, "id" : obj.id, "startTime" : obj.startTime, "endTime" : obj.endTime, "state" : obj.state, "days" : obj.days, "gpio" : obj.gpio }
         
         return json.JSONEncoder.default(self,obj)
 
@@ -104,18 +110,38 @@ class CustomEncoder(json.JSONEncoder):
 # Zone of that ID to file
 def NewZone():
     print("New Zone")
-    sql = "insert into Zone(0,0,0,0,0)
+    sql = "insert into Zone(0,0,0,0,0)"
     mycursor.execute(sql)
 
     RefreshZones()
     
 
-def UpdateZone(i):
+def UpdateZone(id,name,days,startTime,endTime):
     print("Update Zone")
-    sql = "UPDATE Zone Name='"++"', Gpio='"+0+"' WHERE Id="+i
-    
+    sql = "UPDATE Zone SET Name='"+name+"', Gpio='"+str(0)+"', Days='"+str(days)+"', StartTime='"+startTime+"', EndTime ='"+endTime+"' WHERE Id="+str(id)
+    print(sql)
+    mycursor.execute(sql)
 
-def GetZones:
+# GetZones clears the global zones
+def GetZones():
+    zones.clear()
+    
+    print("Called GetZones")
+    sql = "SELECT Id,Name,State,ForceOn,StartTime,EndTime,Gpio,Days FROM Zone"
+    mycursor.execute(sql)
+
+    myresult = mycursor.fetchall()
+
+    zoneCounter = 0
+    
+    for i in myresult:
+        print(i)
+        zones.insert(zoneCounter,Zone(i))
+        print(zones[zoneCounter])
+        zoneCounter = zoneCounter + 1
+
+    return zones
+
 
 
 # Entry point for main program
@@ -141,21 +167,19 @@ def webServer():
     
     if cmd == 'update':
         print("Updating...")
-        zone = request.form.get('zone')
+        
         name = request.form.get('name')
         startTime = request.form.get('startTime')
         endTime = request.form.get('endTime')
+        days = request.form.get('days')
+        id = request.form.get('id')
         
-        if zone == "" or name == "":
+        if id == "" or name == "":
             return "{ \"status\" : \"fail\", \"msg\" : \"Not all information received to update\"}"
         
         else:
-            zone = int(zone)
-            obj[zone].name = name
-            obj[zone].startTime = startTime
-            obj[zone].endTime = endTime
-            
-            UpdateZone(zone)
+                        
+            UpdateZone(id,name,days,startTime,endTime)
             
             return "{ \"status\" : \"success\", \"msg\" : \"Updated Zone\"}"
         
@@ -163,13 +187,18 @@ def webServer():
         print("Returning PI Info")
         deviceDesc = "My PI"
         deviceIp = "192.168.1.100"
+        deviceName = "192.168.1.100"
+        deviceTime = "192.168.1.100"
         #resp = flask.Response(json.dumps(obj,cls=CustomEncoder))
         #resp.headers['Access-Control-Allow-Origin'] = '*'
         # Creating a JSON string from the device properties and the Zone array properties
         jsonStr = "{ \"deviceName\" : \""+deviceName+"\", \"deviceDesc\" : \""+deviceDesc+"\", \"deviceIp\" : \""+deviceIp+"\", \"deviceTime\" : \""+deviceTime+"\", \"Zones\" : "
+        obj = GetZones()
         jsonStr += json.dumps(obj,cls=CustomEncoder)
         jsonStr += "}"
         return jsonStr
+    
+
 
 #@task
 #while True:
