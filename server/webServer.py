@@ -91,6 +91,7 @@ class Zone:
         self.endTime = str(obj[5])
         self.gpio = obj[6] 
         self.days = obj[7]
+        self.schedulerState = obj[8]
         
         print("Created " + self.name + ", State = " + str(self.state))
         print(type(obj[7]))
@@ -101,11 +102,18 @@ class Zone:
 class CustomEncoder(json.JSONEncoder):
     def default(self,obj):
         if isinstance(obj, Zone):
-            return { "name" : obj.name, "id" : obj.id, "startTime" : obj.startTime, "endTime" : obj.endTime, "state" : obj.state, "days" : obj.days, "gpio" : obj.gpio }
+            return { "name" : obj.name, "id" : obj.id, "startTime" : obj.startTime, "endTime" : obj.endTime, "state" : obj.state, "days" : obj.days, "schedulerState" : obj.schedulerState, "gpio" : obj.gpio }
         
         return json.JSONEncoder.default(self,obj)
 
 
+def getJsonMessage(status):
+
+    if status == 0:
+        return "{ \"status\" : \"fail\"}"
+    else:
+        return "{ \"status\" : \"success\"}"
+    
 # SaveZone takes in the id of the zone and saves the
 # Zone of that ID to file
 def NewZone():
@@ -127,7 +135,7 @@ def GetZones():
     zones.clear()
     
     print("Called GetZones")
-    sql = "SELECT Id,Name,State,ForceOn,StartTime,EndTime,Gpio,Days FROM Zone"
+    sql = "SELECT Id,Name,State,ForceOn,StartTime,EndTime,Gpio,Days,SchedulerState FROM Zone"
     mycursor.execute(sql)
 
     myresult = mycursor.fetchall()
@@ -142,7 +150,13 @@ def GetZones():
 
     return zones
 
+def forceOn(id):
+    print("forced on")
+    return 1
 
+def forceOff(id):
+    print("forced off")
+    return 1
 
 # Entry point for main program
 print("Started program...")
@@ -161,6 +175,7 @@ def webServer():
     #zoneList = obj
     
     cmd = request.form.get('cmd')
+    id = request.form.get('id')
     
     print("Received Request...")
     print(str(request.form))
@@ -172,7 +187,6 @@ def webServer():
         startTime = request.form.get('startTime')
         endTime = request.form.get('endTime')
         days = request.form.get('days')
-        id = request.form.get('id')
         
         if id == "" or name == "":
             return "{ \"status\" : \"fail\", \"msg\" : \"Not all information received to update\"}"
@@ -182,6 +196,12 @@ def webServer():
             UpdateZone(id,name,days,startTime,endTime)
             
             return "{ \"status\" : \"success\", \"msg\" : \"Updated Zone\"}"
+
+    elif cmd == 'forceOn':
+            return getJsonMessage(forceOn(id))
+        
+    elif cmd == 'forceOff':
+            return getJsonMessage(forceOff(id))
         
     else:
         print("Returning PI Info")
