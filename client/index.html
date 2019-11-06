@@ -133,14 +133,68 @@ function clickOn(zone)
 	console.log(zones[zone])
 	if (zones[zone].force == 1)
 	{
-		on(zone)
+	$.post(url, 
+		{
+			cmd: 'forceOn',	
+			id: zones[zone].id			
+		},
+		function(data)
+		{
+		console.log("sent update")
+		
+		if (data.status == "success")
+		{
+			on(zone)
+			//getData()
+		}
+		else
+		{
+			showError("Error: " + data.msg)
+			console.log(data)
+		}
+		
+		},
+		"json")
+	  .fail(function (data)
+	  {
+		showError("Force on failed!")
+		console.log(data)
+	  })
 	}
 }
 function clickOff(zone)
 {
 	if (zones[zone].force == 1)
 	{
-		off(zone)
+		$.post(url, 
+		{
+			cmd: 'forceOff',
+			id: zones[zone].id
+			
+		},
+		function(data)
+		{
+		console.log("sent update")
+		
+		if (data.status == "success")
+		{
+			off(zone)
+			//getData()
+		}
+		else
+		{
+			showError("Error: " + data.msg)
+			console.log(data)
+		}
+		
+		},
+		"json")
+	  .fail(function (data)
+	  {
+		showError("Force off failed!")
+		console.log(data)
+	  })
+		
 	}
 }
 
@@ -192,25 +246,25 @@ function update(i)
 	zones[i].name = $("#txt_name_zone"+i).val()
 	zones[i].startTime = $("#startTime_zone"+i).val()
 	zones[i].endTime = $("#endTime_zone"+i).val()
+	zones[i].schedulerState
 	j=0;
-	bDays = "";
+	days = 0;
 	$('input[name="chk_days'+i+'[]"]').each(function(){
 		//$(this).removeAttr("disabled")
 		console.log("Checking day "+j)
 		
 		if ($(this).prop('checked') == true)
 		{
-			bDays = "1".concat(bDays)
+			console.log("true - j="+j+", days="+Math.pow(2,j))
+			
+			days += Math.pow(2,j);
+			
+			console.log(Math.pow(2,j) + " days")
 		}
-		else
-		{
-			bDays = "0".concat(bDays)
-		}
+
 		j++
 		
 	});
-	console.log(bDays)
-	days = parseInt(bDays,10)
 	console.log(days)
 	
 	$.post(url, 
@@ -251,144 +305,151 @@ function update(i)
 
 function loadData(jsonString)
 {
-console.log(jsonString)
-piObject = JSON.parse(jsonString)
+	console.log(jsonString)
+	piObject = JSON.parse(jsonString)
 
-zones = piObject.Zones
+	zones = piObject.Zones
 
-console.log(zones)
+	console.log(zones)
 
-for (i=0; i<zones.length; i++)
-{	
+	for (i=0; i<zones.length; i++)
+	{	
 
-	name = zones[i].name
-	id = zones[i].id
-	startTime = zones[i].startTime
-	endTime = zones[i].endTime
-	state = zones[i].state
-	elementId = i
-	days = zones[i].days.toString(2)
-	
-	// Inserting a 0 in front of start time if needed
-	testHour = zones[i].startTime.split(":")
-	if (testHour[0].length < 2)
-	{
-		startTime = "0"+startTime
-	}
-	
-	// Inserting a 0 in front of end time if needed
-	testHour = zones[i].endTime.split(":")
-	if (testHour[0].length < 2)
-	{
-		endTime = "0"+endTime
-	}
-	
-	console.log("Days = "+days)
-	
-	str = "";
-	str += "<table style=\"width: 100%\">"
-	str += "<tr>"
-	str += "<td colspan=\"5\"><input type=\"text\" id=\"txt_name_zone"+elementId+"\" style=\"font-size: 24px; background: #ffffff; border: 0\" value=\""+name+"\"></h2></td></tr>"
-	str += "<tr><td style=\"margin: 0\"><button type=\"button\" id=\"btn_on_zone"+elementId+"\" class=\"btn btn-secondary btn-lg\">On</button></td>"
-	str += "<td style=\"padding-left: 10px\"><button type=\"button\" class=\"btn btn-secondary btn-lg\" id=\"btn_off_zone"+elementId+"\">Off</button></td>"
-	str += "<td style=\"padding-left: 10px\"><button type=\"button\" class=\"btn btn-secondary btn-lg\" id=\"btn_force_zone"+elementId+"\">Force</button></td>"
-	str += "<td style=\"padding-left: 10px\"><button type=\"button\" class=\"btn btn-secondary btn-lg\" id=\"btn_scheduler_zone"+elementId+"\">Scheduler</button></td>"
-	str += "<td style=\"padding-left: 20px\">Start Time: <input type=\"time\" id=\"startTime_zone"+elementId+"\" value=\""+startTime+"\"></td>"
-	str += "<td>End Time: <input type=\"time\" id=\"endTime_zone"+elementId+"\" value=\""+endTime+"\"></td>"
-	str += "<td style=\"padding-left: 10px\"><table style=\"display: inline\" border=\"0\"><tr><td>M</td><td>T</td><td>W</td><td>Th</td><td>F</td><td>S</td><td>Su</td></tr>"
-	str += "<tr><td><input type=\"checkbox\" id=\"chk_days"+elementId+"\" name=\"chk_days"+elementId+"[]\"></td>"
-	str += "<td><input type=\"checkbox\" id=\"chk_days"+elementId+"\" name=\"chk_days"+elementId+"[]\"></td>"
-	str += "<td><input type=\"checkbox\" id=\"chk_days"+elementId+"\" name=\"chk_days"+elementId+"[]\"></td>"
-	str += "<td><input type=\"checkbox\" id=\"chk_days"+elementId+"\" name=\"chk_days"+elementId+"[]\"></td>"
-	str += "<td><input type=\"checkbox\" id=\"chk_days"+elementId+"\" name=\"chk_days"+elementId+"[]\"></td>"
-	str += "<td><input type=\"checkbox\" id=\"chk_days"+elementId+"\" name=\"chk_days"+elementId+"[]\"></td>"
-	str += "<td><input type=\"checkbox\" id=\"chk_days"+elementId+"\" name=\"chk_days"+elementId+"[]\"></td></tr></table>"
-	
-	str += "<td style=\"padding-left: 10px\"><button type=\"button\" class=\"btn btn-secondary\" id=\"btn_edit_zone"+elementId+"\">Edit</button></td>"
-	str += "<td style=\"padding-left: 10px\"><button type=\"button\" class=\"btn btn-secondary\" id=\"btn_save_zone"+elementId+"\">Save</button></td>"
-	str += "<td style=\"padding-left: 10px\"><button type=\"button\" class=\"btn btn-secondary\" id=\"btn_cancel_zone"+elementId+"\">Cancel</button></td>"
-	
-	str += "</tr></table></td>"
-	str += "<hr>"
-	console.log(zones[elementId])
-	$("#content").append("<div id=\"zone"+elementId+"\">"+str+"</div>")
-
-	var j=0
-	$('input[name="chk_days'+elementId+'[]"]').each(function(){
-
-		console.log(days.substring(parseInt(j),parseInt(j)+1))
-		console.log($(this))
+		name = zones[i].name
+		id = zones[i].id
+		startTime = zones[i].startTime
+		endTime = zones[i].endTime
+		state = zones[i].state
+		elementId = i
+		scheduler = zones[i].schedulerState
 		
-		if (days.substring(parseInt(j),parseInt(j)+1) == 1)
+		console.log("Days before reverse = "+zones[i].days.toString(2))
+		
+		// When convering from integer to binary the bits are backwards
+		days = zones[i].days.toString(2).split("").reverse().join().replace(/,/gi,"")
+		
+		console.log("Days after reverse = "+days)
+		
+		// Inserting a 0 in front of start time if needed
+		testHour = zones[i].startTime.split(":")
+		if (testHour[0].length < 2)
 		{
-			console.log("true")
-			$(this).attr('checked', true);
+			startTime = "0"+startTime
 		}
-		j++
-	});
+		
+		// Inserting a 0 in front of end time if needed
+		testHour = zones[i].endTime.split(":")
+		if (testHour[0].length < 2)
+		{
+			endTime = "0"+endTime
+		}
+		
+		console.log("Days = "+days)
+		
+		str = "";
+		str += "<table style=\"width: 100%\">"
+		str += "<tr>"
+		str += "<td colspan=\"5\"><input type=\"text\" id=\"txt_name_zone"+elementId+"\" style=\"font-size: 24px; background: #ffffff; border: 0\" value=\""+name+"\"></h2></td></tr>"
+		str += "<tr><td style=\"margin: 0\"><button type=\"button\" id=\"btn_on_zone"+elementId+"\" class=\"btn btn-secondary btn-lg\">On</button></td>"
+		str += "<td style=\"padding-left: 10px\"><button type=\"button\" class=\"btn btn-secondary btn-lg\" id=\"btn_off_zone"+elementId+"\">Off</button></td>"
+		str += "<td style=\"padding-left: 10px\"><button type=\"button\" class=\"btn btn-secondary btn-lg\" id=\"btn_force_zone"+elementId+"\">Force</button></td>"
+		str += "<td style=\"padding-left: 10px\"><button type=\"button\" class=\"btn btn-secondary btn-lg\" id=\"btn_scheduler_zone"+elementId+"\">Scheduler</button></td>"
+		str += "<td style=\"padding-left: 20px\">Start Time: <input type=\"time\" id=\"startTime_zone"+elementId+"\" value=\""+startTime+"\"></td>"
+		str += "<td>End Time: <input type=\"time\" id=\"endTime_zone"+elementId+"\" value=\""+endTime+"\"></td>"
+		str += "<td style=\"padding-left: 10px\"><table style=\"display: inline\" border=\"0\"><tr><td>M</td><td>T</td><td>W</td><td>Th</td><td>F</td><td>S</td><td>Su</td></tr>"
+		str += "<tr><td><input type=\"checkbox\" id=\"chk_days"+elementId+"\" name=\"chk_days"+elementId+"[]\"></td>"
+		str += "<td><input type=\"checkbox\" id=\"chk_days"+elementId+"\" name=\"chk_days"+elementId+"[]\"></td>"
+		str += "<td><input type=\"checkbox\" id=\"chk_days"+elementId+"\" name=\"chk_days"+elementId+"[]\"></td>"
+		str += "<td><input type=\"checkbox\" id=\"chk_days"+elementId+"\" name=\"chk_days"+elementId+"[]\"></td>"
+		str += "<td><input type=\"checkbox\" id=\"chk_days"+elementId+"\" name=\"chk_days"+elementId+"[]\"></td>"
+		str += "<td><input type=\"checkbox\" id=\"chk_days"+elementId+"\" name=\"chk_days"+elementId+"[]\"></td>"
+		str += "<td><input type=\"checkbox\" id=\"chk_days"+elementId+"\" name=\"chk_days"+elementId+"[]\"></td></tr></table>"
+		
+		str += "<td style=\"padding-left: 10px\"><button type=\"button\" class=\"btn btn-secondary\" id=\"btn_edit_zone"+elementId+"\">Edit</button></td>"
+		str += "<td style=\"padding-left: 10px\"><button type=\"button\" class=\"btn btn-secondary\" id=\"btn_save_zone"+elementId+"\">Save</button></td>"
+		str += "<td style=\"padding-left: 10px\"><button type=\"button\" class=\"btn btn-secondary\" id=\"btn_cancel_zone"+elementId+"\">Cancel</button></td>"
+		
+		str += "</tr></table></td>"
+		str += "<hr>"
+		console.log(zones[elementId])
+		$("#content").append("<div id=\"zone"+elementId+"\">"+str+"</div>")
+
+		var j=0
+		$('input[name="chk_days'+elementId+'[]"]').each(function(){
+
+			console.log(days.substring(parseInt(j),parseInt(j)+1))
+			console.log($(this))
+			
+			if (days.substring(parseInt(j),parseInt(j)+1) == 1)
+			{
+				console.log("true")
+				$(this).attr('checked', true);
+			}
+			j++
+		});
 	
 	
-	if (state == 1)
-	{
-	console.log(i)
-		on(elementId)
-	}
-	else
-	{
-	console.log(i)
-		off(elementId)
-	}
-	
-	
-	(function(elementId) {
-	$("#btn_cancel_zone"+elementId).on("click", function()
+		if (state == 1)
 		{
-		disableEdit(elementId)
-		})
-	$("#btn_edit_zone"+elementId).on("click", function()
-		{
-		enableEdit(elementId)
-		})
-	$("#btn_save_zone"+elementId).on("click", function()
-		{
-		update(elementId)
-		})
-	$("#btn_force_zone"+elementId).on("click", function()
-		{
-		if (zones[elementId].force == 0)
-		{
-			enableForce(elementId)
+		console.log(i)
+			on(elementId)
 		}
 		else
 		{
-			disableForce(elementId)
+		console.log(i)
+			off(elementId)
 		}
-		})
-	$("#btn_on_zone"+elementId).on("click", function()
-		{
-			clickOn(elementId)
-		})
-	$("#btn_off_zone"+elementId).on("click", function()
-		{
-			clickOff(elementId)
-		})
-		$("#btn_scheduler_zone"+elementId).on("click", function()
-		{
-			if (zones[id].scheduler == 0)
+		
+		
+		(function(elementId) {
+		$("#btn_cancel_zone"+elementId).on("click", function()
 			{
-				enableScheduler(elementId)
+			disableEdit(elementId)
+			})
+		$("#btn_edit_zone"+elementId).on("click", function()
+			{
+			enableEdit(elementId)
+			})
+		$("#btn_save_zone"+elementId).on("click", function()
+			{
+			update(elementId)
+			})
+		$("#btn_force_zone"+elementId).on("click", function()
+			{
+			if (zones[elementId].force == 0)
+			{
+				enableForce(elementId)
 			}
 			else
 			{
-				disableScheduler(elementId)
+				disableForce(elementId)
 			}
-		})
+			})
+		$("#btn_on_zone"+elementId).on("click", function()
+			{
+				clickOn(elementId)
+			})
+		$("#btn_off_zone"+elementId).on("click", function()
+			{
+				clickOff(elementId)
+			})
+			$("#btn_scheduler_zone"+elementId).on("click", function()
+			{
+				if (zones[id].scheduler == 0)
+				{
+					enableScheduler(elementId)
+				}
+				else
+				{
+					disableScheduler(elementId)
+				}
+			})
 
-	})(i);
+		})(i);
 
-	disableEdit(elementId)
-		
-}
+		disableEdit(elementId)
+			
+	}
 }
 
 
