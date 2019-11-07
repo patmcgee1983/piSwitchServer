@@ -220,14 +220,45 @@ function off(zone)
 
 function enableScheduler(zone)
 {
-	console.log(zones[zone].startTime)
-	console.log(zones[zone].endTime)
+
 	if (zones[zone].startTime != "" && zones[zone].endTime != "")
 	{
-		zones[zone].scheduler = 1;
-		$("#btn_scheduler_zone"+zone).attr('class', 'btn btn-success btn-lg');
-		disableForce(zone)
+
+		$.post(url, 
+		{
+			cmd: 'enableScheduler',
+			id: zones[zone].id
+			
+		},
+		function(data)
+		{
+		console.log("sent update")
+		
+		if (data.status == "success")
+		{
+			zones[zone].schedulerState = 1;
+			zones[zone].force = 0
+			zones[zone].state = 0
+			$("#btn_scheduler_zone"+zone).attr('class', 'btn btn-success btn-lg');
+			$("#btn_force_zone"+zone).attr('class', 'btn btn-secondary btn-lg');
+			$("#btn_off_zone"+zone).attr('class', 'btn btn-danger btn-lg');
+			$("#btn_on_zone"+zone).attr('class', 'btn btn-secondary btn-lg');
+		}
+		else
+		{
+			showError("Error: " + data.msg)
+			console.log(data)
+		}
+		
+		},
+		"json")
+	  .fail(function (data)
+	  {
+		showError("Enable Scheduler Failed!")
+		console.log(data)
+	  })
 	}
+	
 	else
 	{
 		showError("Invalid time range!")
@@ -236,8 +267,36 @@ function enableScheduler(zone)
 
 function disableScheduler(zone)
 {
-	zones[zone].scheduler = 0;
-	$("#btn_scheduler_zone"+zone).attr('class', 'btn btn-secondary btn-lg');
+	$.post(url, 
+	{
+		cmd: 'disableScheduler',
+		id: zones[zone].id
+		
+	},
+	function(data)
+	{
+	console.log("sent update")
+	
+	if (data.status == "success")
+	{
+		$("#btn_scheduler_zone"+zone).attr('class', 'btn btn-secondary btn-lg');
+		zones[zone].schedulerState = 0;
+		//getData()
+	}
+	else
+	{
+		showError("Error: " + data.msg)
+		console.log(data)
+	}
+	
+	},
+	"json")
+	  .fail(function (data)
+	  {
+		showError("Enable Scheduler Failed!")
+		console.log(data)
+	  })
+	
 }
 
 function update(i)
@@ -435,7 +494,7 @@ function loadData(jsonString)
 			})
 			$("#btn_scheduler_zone"+elementId).on("click", function()
 			{
-				if (zones[id].scheduler == 0)
+				if (zones[elementId].schedulerState == 0 || zones[elementId].schedulerState == null)
 				{
 					enableScheduler(elementId)
 				}
