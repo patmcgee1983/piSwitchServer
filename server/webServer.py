@@ -1,9 +1,13 @@
+#!/usr/bin/python3.5
+
 #
 # PI Web Server
 # made 2018 by Pat McGee
 # This takes in http requests, and responds with a json string to the client the switch states
 # Works in conjunction with the client file
 #
+
+
 
 import json
 from pathlib import Path
@@ -20,15 +24,17 @@ import mysql.connector
 import datetime
 import time
 
-piDb = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    passwd="toor"
-    )
+
+def getConnection():
+    piDb = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        passwd="toor"
+        )
+    
+    return piDb
 
 
-mycursor = piDb.cursor()
-mycursor.execute("USE piDb")
 
 
 def crossdomain(origin=None, methods=None, headers=None,
@@ -126,13 +132,26 @@ def NewZone():
 
 def UpdateZone(id,name,days,startTime,endTime):
     print("Update Zone")
+    
+    myConnection = getConnection()
+    mycursor = myConnection.cursor()
+    mycursor.execute("USE piDb")
+    
     sql = "UPDATE Zone SET Name='"+name+"', Gpio='"+str(0)+"', Days='"+str(days)+"', StartTime='"+startTime+"', EndTime ='"+endTime+"' WHERE Id="+str(id)
     print(sql)
     mycursor.execute(sql)
+    
+    myConnection.commit()
+    mycursor.close()
+    myConnection.close()
 
 # GetZones clears the global zones
 def GetZones():
     zones.clear()
+
+    myConnection = getConnection()
+    mycursor = myConnection.cursor()
+    mycursor.execute("USE piDb")
     
     print("Called GetZones")
     sql = "SELECT Id,Name,State,ForceOn,StartTime,EndTime,Gpio,Days,SchedulerState FROM Zone"
@@ -148,15 +167,70 @@ def GetZones():
         print(zones[zoneCounter])
         zoneCounter = zoneCounter + 1
 
+    mycursor.close()
+    myConnection.close()
     return zones
 
 def forceOn(id):
     print("forced on")
+
+    myConnection = getConnection()
+    mycursor = myConnection.cursor()
+    mycursor.execute("USE piDb")
+    
+    sql = "UPDATE Zone SET State=1, ForceOn=1,SchedulerState=0 WHERE Id="+id
+    mycursor.execute(sql)
+    myConnection.commit()
+    
+    mycursor.close()
+    myConnection.close()
     return 1
 
 def forceOff(id):
     print("forced off")
+
+    myConnection = getConnection()
+    mycursor = myConnection.cursor()
+    mycursor.execute("USE piDb")
+    
+    sql = "UPDATE Zone SET State=0, ForceOn=1,SchedulerState=0 WHERE Id="+id
+    mycursor.execute(sql)
+    myConnection.commit()
+    
+    mycursor.close()
+    myConnection.close()
     return 1
+
+def enableScheduler(id):
+    print("Scheduler turned on")
+
+    myConnection = getConnection()
+    mycursor = myConnection.cursor()
+    mycursor.execute("USE piDb")
+    
+    sql = "UPDATE Zone SET State=0, ForceOn=0,SchedulerState=1 WHERE Id="+id
+    mycursor.execute(sql)
+    myConnection.commit()
+    
+    mycursor.close()
+    myConnection.close()
+    return 1
+
+def disableScheduler(id):
+    print("Scheduler turned off")
+
+    myConnection = getConnection()
+    mycursor = myConnection.cursor()
+    mycursor.execute("USE piDb")
+    
+    sql = "UPDATE Zone SET State=0, ForceOn=0,SchedulerState=0 WHERE Id="+id
+    mycursor.execute(sql)
+    myConnection.commit()
+    
+    mycursor.close()
+    myConnection.close()
+    return 1
+
 
 # Entry point for main program
 print("Started program...")
@@ -202,6 +276,12 @@ def webServer():
         
     elif cmd == 'forceOff':
             return getJsonMessage(forceOff(id))
+
+    elif cmd == 'enableScheduler':
+            return getJsonMessage(enableScheduler(id))
+
+    elif cmd == 'disableScheduler':
+            return getJsonMessage(disableScheduler(id))
         
     else:
         print("Returning PI Info")
